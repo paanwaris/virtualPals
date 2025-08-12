@@ -1,4 +1,4 @@
-#' Build a 2D or 3D Ellipsoid Objects
+#' Build a 2D or 3D Ellipsoid Object
 #'
 #' Creates a structured object representing a rotated ellipsoid. This object
 #' contains all necessary matrices for geometric and statistical calculations,
