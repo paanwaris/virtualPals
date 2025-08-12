@@ -31,15 +31,15 @@ plot(bio_stack_terrestrial)
 # Convert the masked raster stack to a data frame for analysis.
 # 'na.rm=TRUE' is important to remove ocean pixels, making the data frame smaller.
 bio_df <- as.data.frame(bio_stack_terrestrial, xy = TRUE, na.rm = TRUE)
-df <- bio_df[sample(1:nrow(bio_df), size = 100000, replace = FALSE), ] 
+df <- bio_df[sample(1:nrow(bio_df), size = 100000, replace = FALSE), ]
 # --- 4. Define the Species Niche (The Ellipsoid) ---
 
 # Define the center and axes (niche breadth) of the 3D environmental ellipsoid.
 # These values correspond to the environmental variables in bio_stack:
 # Center: c(AnnualTemp, AnnualPrecip, TempSeasonality)
 # Axes:   c(Tolerance for Temp, Tolerance for Precip, Tolerance for Seasonality)
-niche_center <- c(15, 500, 12000) 
-niche_axes <- c(100, 500, 2500)   
+niche_center <- c(15, 500, 12000)
+niche_axes <- c(100, 500, 2500)
 
 # Create the ellipsoid object that represents our virtual species' niche
 ell_1 <- get_parametric_ellipsoid(center = niche_center,
@@ -123,13 +123,13 @@ bio_df_sample <- rbind(unsuitable_points_sample, suitable_points)
 
 
 # Create the 3D plot using the subsampled data
-p_inside_3d <- plot_ly(data = unsuitable_points_sample, 
+p_inside_3d <- plot_ly(data = unsuitable_points_sample,
             x = ~AnnualTemp, y = ~AnnualPrecip, z = ~TempSeasonality,
             type = 'scatter3d', mode = 'markers',
             marker = list(color = "lightgrey", size = 2),
             name = "Background Environment") %>%
   # Add the points inside the niche in green
-  add_trace(data = suitable_points, 
+  add_trace(data = suitable_points,
             x = ~AnnualTemp, y = ~AnnualPrecip, z = ~TempSeasonality,
             type = 'scatter3d', mode = 'markers',
             marker = list(color = "darkgreen", size = 1.5),
