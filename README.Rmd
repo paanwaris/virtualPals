@@ -1,0 +1,125 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# VirtualPals
+
+[![R-CMD-check](https://github.com/your-username/VirtualPals/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/your-username/VirtualPals/actions/workflows/R-CMD-check.yaml)
+
+**VirtualPals** is an R package for creating virtual species and simulating their ecological niches for use in species distribution modeling (SDM) research, algorithm testing, and education. It allows you to define a species' fundamental niche in a multi-dimensional environmental space and project that niche onto a geographic landscape to generate a potential distribution.
+
+The core methodology is based on defining the niche as a multi-dimensional ellipsoid. The environmental conditions inside the ellipsoid are considered "suitable" for the species, while those outside are "unsuitable."
+
+## 🚀 Features
+
+* **Define N-dimensional Niches**: Specify a species' fundamental niche using an ellipsoidal model with a defined center (optimum) and axes (tolerances).
+* **Generate Suitability Maps**: Create geographic maps of environmental suitability based on the defined niche and environmental raster data.
+* **Create Presence-Absence Data**: Convert continuous suitability maps into binary presence-absence maps.
+* **Rich Visualization**:
+    * Visualize the environmental niche in a 3D interactive plot.
+    * Map the species' potential distribution geographically.
+    * Analyze environmental variable correlations.
+
+## 📦 Installation
+
+You can install the development version of VirtualPals from GitHub with:
+
+```{r}
+# install.packages("devtools")
+# devtools::install_github("your-username/VirtualPals")
+```
+
+## quick_start Quick Start Example
+
+Here's a complete workflow to define a virtual species and map its distribution.
+
+### 1. Load Libraries and Data
+
+First, load `VirtualPals` along with `terra` for handling spatial data. You'll need to provide your own environmental raster layers. For this example, we assume you have rasters for Annual Mean Temperature, Annual Precipitation, and Temperature Seasonality.
+
+```{r}
+library(VirtualPals)
+library(terra)
+library(rnaturalearth) # For world map data for masking
+# Load environmental raster layers
+# Replace with the path to your own data
+bio_1 <- terra::rast("path/to/Bio1.tif")
+bio_12 <- terra::rast("path/to/Bio12.tif")
+bio_4 <- terra::rast("path/to/Bio4.tif")
+
+# Stack and name the layers
+bio_stack <- c(bio_1, bio_12, bio_4)
+names(bio_stack) <- c("AnnualTemp", "AnnualPrecip", "TempSeasonality")
+
+# Optional: Mask rasters to only include terrestrial areas
+world_map_sf <- ne_countries(scale = "medium", returnclass = "sf")
+bio_stack_terrestrial <- mask(bio_stack, vect(world_map_sf))
+```
+
+### 2. Define the Ecological Niche
+
+Next, define the species' niche. We'll use the `define_niche_ellipsoid()` function (which uses `get_parametric_ellipsoid` internally). You specify the environmental optimum (`center`) and the tolerance along each environmental axis (`axes`).
+
+```{r}
+# Define the niche center and axes (breadth)
+# Corresponds to: c(AnnualTemp, AnnualPrecip, TempSeasonality)
+my_niche <- define_niche_ellipsoid(
+  center = c(15, 500, 12000),
+  axes = c(10, 500, 2500), # Note: axes are radii (tolerances)
+  n_points = 100 # Resolution for the 3D plot surface
+)
+```
+
+### 3. Generate Suitability Map
+
+Now, project this niche onto the geographic landscape using your environmental data to see where the species could live.
+
+```{r}
+# Generate a binary suitability map (1 = suitable, 0 = unsuitable)
+suitability_map <- generate_suitability(
+  env_rasters = bio_stack_terrestrial,
+  niche_definition = my_niche
+)
+```
+
+### 4. Visualize Results
+
+VirtualPals makes it easy to visualize both the abstract niche in environmental space and the final species distribution.
+
+#### Plot the Geographic Distribution
+
+```{r}
+# Plot the binary distribution map
+plot(suitability_map,
+     col = c("grey90", "darkgreen"),
+     legend = FALSE,
+     main = "Potential Distribution of Virtualis PALSicus")
+
+# Add country borders for context
+lines(vect(ne_countries(scale = "medium", returnclass = "sf")), col = "black", lwd = 0.5)
+```
+
+
+#### Plot the Niche in 3D Environmental Space
+
+Use the `plot_niche_3d()` function for an interactive visualization of the environmental space.
+
+```{r}
+# This function requires the 'plotly' package
+# It takes the environmental data and the niche object
+plot_niche_3d(
+  env_data = bio_stack_terrestrial,
+  niche_definition = my_niche
+)
+```
