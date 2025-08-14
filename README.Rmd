@@ -18,9 +18,9 @@ knitr::opts_chunk$set(
 [![R-CMD-check](https://github.com/your-username/VirtualPals/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/your-username/VirtualPals/actions/workflows/R-CMD-check.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**VirtualPals** is an R package for creating virtual species by defining their ecological niches in a multi-dimensional environmental space. It allows you to project these niches onto geographic landscapes to simulate species distributions. This tool is ideal for researchers and students who need to test Species Distribution Model (SDM) algorithms, explore ecological theory, or generate plausible data for educational purposes.
+**VirtualPals** is an R package for creating virtual species by defining their ecological niches in a multi-dimensional environmental space. It allows you to project these niches onto real-world geographic landscapes to simulate species distributions. This tool is ideal for researchers and students who need to test Species Distribution Model (SDM) algorithms, explore ecological theory, or generate plausible data for educational purposes.
 
-The core of the package is its ability to define a species' fundamental niche as a fully-rotatable, N-dimensional ellipsoid.
+The core of the package is its ability to define a species' fundamental niche as a fully-rotatable, N-dimensional ellipsoid using real environmental data.
 
 ---
 
@@ -28,12 +28,10 @@ The core of the package is its ability to define a species' fundamental niche as
 
 * **Flexible Niche Definition**: Define species niches as 2D or 3D ellipsoids with full control over the center (optimum), axes (tolerances), and rotation.
 * **Geographic Projection**: Generate geographic suitability maps from environmental raster data based on your defined niche.
-* **Multiple Output Types**: Create maps of:
-    * **Binary** suitability (presence/absence).
-    * **Probabilistic** suitability based on a Gaussian decay from the niche center.
-    * Raw **Mahalanobis distance** to the niche optimum.
-* **Data Filtering**: Easily extract points from any dataset (e.g., climate data) that fall within a defined niche.
-* **Rich Visualization**: Integrates with `ggplot2` and `plotly` for clear and interactive visualizations of both niches and geographic distributions.
+* **Multiple Output Types**: Create maps of binary (presence/absence), probabilistic, or distance-based suitability.
+* **Data Filtering**: Easily extract points from any dataset that fall within a defined niche.
+* **Rich Visualization**: Integrates with `plotly` for interactive 3D visualizations of niches and with base R plotting for clear geographic maps.
+* **Bundled Data**: Comes with sample WorldClim bioclimatic data so you can run examples out of the box.
 
 ---
 
@@ -43,109 +41,165 @@ You can install the development version of VirtualPals from GitHub:
 
 ```{r}
 # install.packages("devtools")
-devtools::install_github("paanwaris/VirtualPals")
+devtools::install_github("paanwaris/virtualPals")
 ```
 
 ---
 
-## 🐾 Core Workflow: A Complete Example
+## 🗺️ Core Workflow: From Niche to Map
 
-This example demonstrates the full workflow, from creating environmental data to defining a niche and visualizing the results.
+This example demonstrates the full workflow using the bioclimatic data bundled with the package. We will define a niche for a hypothetical species and map its potential global distribution.
 
 ### Step 1: Load Libraries
 
 ```{r}
-library(VirtualPals)
+library(virtualPals)
 library(terra)
-library(ggplot2)
+library(plotly)
+library(rnaturalearth) # For plotting world boundaries
 ```
 
-### Step 2: Create Environmental Data
+### Step 2: Load Packaged Environmental Data
 
-For this example, we'll create a simple virtual world with two environmental variables: "Temperature" and "Rainfall".
+The package includes sample bioclimatic raster data. We load them using `system.file()` which finds the files inside the installed package directory.
 
 ```{r}
-# Create a blank raster template
-world <- rast(xmin = -180, xmax = 180, ymin = -90, ymax = 90, res = 1, crs = "WGS84")
+# Find the path to the bundled data files
+path_bio1 <- system.file("extdata", "Bio1.tif", package = "virtualPals")
+path_bio12 <- system.file("extdata", "Bio12.tif", package = "virtualPals")
+path_bio4 <- system.file("extdata", "Bio4.tif", package = "virtualPals")
 
-# Create a temperature gradient (cold at poles, warm at equator)
-temp <- init(world, fun = \(y) 30 - 60 * abs(y / 90))
-names(temp) <- "Temperature"
-
-# Create a rainfall gradient (wet in north, dry in south)
-rainfall <- init(world, fun = \(y) 1500 + 1500 * (y / 90))
-names(rainfall) <- "Rainfall"
-
-# Stack the layers
-env_rasters <- c(temp, rainfall)
-
-# Plot the environmental layers
-plot(env_rasters, col = hcl.colors(100, "Lajolla"))
+# Load the rasters
+bio1 <- rast(path_bio1)   # Annual Mean Temperature
+bio12 <- rast(path_bio12) # Annual Precipitation
+bio4 <- rast(path_bio4)   # Temperature Seasonality
 ```
 
+### Step 3: Prepare Environmental Layers
 
-### Step 3: Define the Species Niche
-
-We'll define the niche for our virtual species, *Virtualis palsicus*. It prefers warm, moderately wet conditions. We use a **named vector** for `center` to ensure variables are matched correctly. We'll also rotate the niche slightly.
+We'll stack the rasters, name them, and mask them to only include terrestrial areas.
 
 ```{r}
-# Define the niche using a rotated ellipse
-vpals_niche <- build_ellipsoid(
-  center = c(Temperature = 20, Rainfall = 1800),
-  axes = c(5, 400), # Tolerance of ±5°C and ±400mm rain
-  angles = -pi / 8  # Rotate by -22.5 degrees
+# Combine layers into a single SpatRaster
+bio_stack <- c(bio1, bio12, bio4)
+names(bio_stack) <- c("AnnualTemp", "AnnualPrecip", "TempSeasonality")
+
+# Get world boundaries and mask the environmental data
+world_sf <- ne_countries(scale = "medium", returnclass = "sf")
+bio_stack_terrestrial <- mask(bio_stack, vect(world_sf))
+plot(bio_stack_terrestrial)
+```
+
+### Step 4: Define the Species Niche
+
+Let's define a niche for a species that prefers temperate, moderately wet environments with noticeable seasons. We use a **named vector** for `center` so the function can reliably match niche dimensions to the raster layers.
+
+```{r}
+# Define the 3D niche using a rotated ellipsoid
+species_niche <- build_ellipsoid(
+  center = c(AnnualTemp = 300, AnnualPrecip = 1500, TempSeasonality = 2000),
+  axes = c(100, 500, 2500), # Tolerances for Temp, Precip, and Seasonality
+  angles = c(0, 0, pi/12)   # We'll add a slight rotation
 )
+
+bio_df <- as.data.frame(bio_stack_terrestrial, xy = TRUE, na.rm = TRUE)
+df <- bio_df[sample(1:nrow(bio_df), size = 100000, replace = FALSE), ]
+
+plot_ly(df, x = ~AnnualTemp, y = ~AnnualPrecip, z = ~TempSeasonality,
+                     type = 'scatter3d', mode = 'markers',
+                     marker = list(color = "lightgrey",
+                                   size = 3),
+                     name = "Points") %>%
+  add_trace(data = species_niche$surface, x=~x, y=~y, z=~z,
+            type="scatter3d", mode="lines",
+            line=list(color="blue"),
+            name="Ellipsoid surface", inherit = FALSE) %>%
+  add_markers(x = species_niche$center[1], y = species_niche$center[2], z = species_niche$center[3],
+              marker = list(color = 'red', size = 5),
+              name = "Center") %>%
+  layout(
+    title = "Ellipsoid in 3D with Axes and Center",
+    scene = list(
+      xaxis = list(title = "X"),
+      yaxis = list(title = "Y"),
+      zaxis = list(title = "Z")
+    ),
+    legend = list(x = 0.05, y = 0.95)
+  )
 ```
 
-### Step 4: Generate Suitability Maps
+### Step 5: Generate the Species Distribution Map
 
-Now, we project this abstract niche onto our environmental map to find suitable habitats.
+Now, we project this abstract niche onto our global environmental map to find all suitable habitats.
 
 ```{r}
 # Generate a binary presence/absence map
-suit_binary <- generate_suitability(env_rasters, vpals_niche, output_type = "binary")
-
-# Generate a continuous probabilistic map
-suit_prob <- generate_suitability(env_rasters, vpals_niche, output_type = "probabilistic")
-
-# Plot the resulting distributions
-par(mfrow = c(1, 2))
-plot(suit_binary, main = "Binary Distribution of V. palsicus", col = c("grey90", "#2E8B57"))
-plot(suit_prob, main = "Probabilistic Distribution of V. palsicus", col = hcl.colors(100, "Viridis"))
+suitability_map <- generate_suitability(
+  env_rasters = bio_stack_terrestrial,
+  niche = species_niche,
+  output_type = "binary"
+)
 ```
 
 
-### Step 5: Visualize the Niche in Environmental Space
+### Step 6: Visualize the Geographic Distribution
 
-It's crucial to see how the niche relates to the available environments. We'll plot the niche space, the available environments (our raster data), and the subset of environments that are suitable.
+Let's plot our final map and add country borders for context.
 
 ```{r}
-# Convert the raster data to points for plotting (subsample for performance)
-env_points <- as.data.frame(env_rasters, na.rm = TRUE)
-env_points_sample <- env_points[sample(nrow(env_points), 10000), ]
+plot(suitability_map,
+     col = c("grey90", "darkgreen"),
+     legend = FALSE,
+     main = "Potential Global Distribution of Virtualis palsicus")
 
-# Use our function to find which of these points are inside the niche
-points_inside <- points_in_ellipsoid(vpals_niche, env_points_sample)
+# Add world boundaries
+lines(vect(world_sf), col = "black", lwd = 0.5)
+```
+
+### Step 7: Visualize the Niche in 3D Environmental Space
+
+Finally, let's create an interactive 3D plot to see how the species' niche (the ellipsoid) fits within the world's available environments.
+
+```{r}
+# Convert rasters to a data frame, subsampling for performance
+env_df <- as.data.frame(bio_stack_terrestrial, na.rm = TRUE)
+env_df_sample <- env_df[sample(nrow(env_df), 50000), ]
+
+# Find which of the sampled points fall inside our niche
+points_inside <- points_in_ellipsoid(species_niche, env_df_sample)
 points_inside <- as.data.frame(points_inside)
 
-# Plot with ggplot2
-ggplot() +
-  # Plot all available environments in the background
-  geom_point(data = env_points_sample, aes(x = Temperature, y = Rainfall),
-             color = "grey80", shape = 16, alpha = 0.5) +
-  # Highlight the suitable points (inside the niche)
-  geom_point(data = points_inside, aes(x = Temperature, y = Rainfall),
-             color = "#006400", shape = 16) +
-  # Draw the niche boundary
-  geom_path(data = vpals_niche$surface, aes(x = x, y = y),
-            color = "#CD5C5C", linewidth = 1.2) +
-  labs(
-    title = "Ecological Niche of Virtualis palsicus",
-    subtitle = "Showing available vs. suitable environments",
-    x = "Temperature (°C)",
-    y = "Rainfall (mm/year)"
-  ) +
-  theme_minimal()
+# Define your colors
+my_colors <- c("grey", "darkgreen", "blue")
+
+plot_ly(colors = my_colors) %>%
+  # Add all available environmental points (the background)
+  add_markers(data = env_df_sample,
+              x = ~AnnualTemp, y = ~AnnualPrecip, z = ~TempSeasonality,
+              marker = list(color = "grey", size = 2, opacity = 0.4),
+              name = "Global Environments") %>%
+  # Highlight the suitable points that fall inside the niche
+  add_markers(data = points_inside,
+              x = ~AnnualTemp, y = ~AnnualPrecip, z = ~TempSeasonality,
+              marker = list(color = "darkgreen", size = 2.5),
+              name = "Suitable Environments") %>%
+  # Draw the niche boundary as a 3D mesh
+  add_trace(data = species_niche$surface,
+            x = ~x, y = ~y, z = ~z,
+            type = "scatter3d", 
+            mode = "lines",
+            opacity = 0.15, 
+            line = list(color = "blue", width = 2),
+            name = "Niche Boundary") %>%
+  layout(
+    title = "Species Niche in 3D Environmental Space",
+    scene = list(
+      xaxis = list(title = "Annual Temp (°C)"),
+      yaxis = list(title = "Annual Precip. (mm)"),
+      zaxis = list(title = "Temp. Seasonality")
+    )
+  )
+
 ```
 
 
