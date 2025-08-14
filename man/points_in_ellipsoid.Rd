@@ -23,6 +23,7 @@ Mahalanobis distance.
 \seealso{
 Other ellipsoid functions: 
 \code{\link{build_ellipsoid}()},
-\code{\link{generate_suitability}()}
+\code{\link{generate_suitability}()},
+\code{\link{plot_niche_3d}()}
 }
 \concept{ellipsoid functions}

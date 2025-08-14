@@ -52,6 +52,7 @@ ell3d <- build_ellipsoid(
 \seealso{
 Other ellipsoid functions: 
 \code{\link{generate_suitability}()},
+\code{\link{plot_niche_3d}()},
 \code{\link{points_in_ellipsoid}()}
 }
 \concept{ellipsoid functions}

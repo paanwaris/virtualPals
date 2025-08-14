@@ -58,6 +58,7 @@ plot(suit_map_prob, main = "Probabilistic Suitability", col = hcl.colors(100, "L
 \seealso{
 Other ellipsoid functions: 
 \code{\link{build_ellipsoid}()},
+\code{\link{plot_niche_3d}()},
 \code{\link{points_in_ellipsoid}()}
 }
 \concept{ellipsoid functions}
