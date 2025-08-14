@@ -10,15 +10,14 @@ points_in_ellipsoid(ell, points)
 \item{ell}{An `ellipsoid` object created by `build_ellipsoid()`.}
 
 \item{points}{A matrix or data frame of points to test. The column order
-must match the order of variables in the ellipsoid's center.}
+must match the order of variables in the ellipsoid's center vector.}
 }
 \value{
-A matrix containing the rows of `points` that are inside the ellipsoid.
+A matrix containing the rows from `points` that are inside the ellipsoid.
 }
 \description{
 Filters a set of points, returning only those that fall within the boundary
-of a given ellipsoid. The determination is made using the squared
-Mahalanobis distance.
+of a given ellipsoid, based on the squared Mahalanobis distance.
 }
 \seealso{
 Other ellipsoid functions: 

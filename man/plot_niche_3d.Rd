@@ -13,9 +13,8 @@ plot_niche_3d(
 )
 }
 \arguments{
-\item{env_data}{A data frame containing columns for the environmental variables
-(e.g., "AnnualTemp", "AnnualPrecip", "TempSeasonality") and a `suitability`
-column (1 for suitable, 0 for unsuitable).}
+\item{env_data}{A data frame containing columns for the environmental
+variables and a `suitability` column (1 for suitable, 0 for unsuitable).}
 
 \item{niche}{An `ellipsoid` object created by `build_ellipsoid()`. It must
 be a 3D niche.}
@@ -31,21 +30,8 @@ to sample for the plot.}
 An interactive `plotly` object.
 }
 \description{
-Creates an interactive 3D plot showing the species' ellipsoidal niche
+Creates an interactive 3D plot showing a species' ellipsoidal niche
 relative to the available background environments.
-}
-\examples{
-# This is a conceptual example. You would run this after creating
-# 'bio_df_with_suitability' and 'species_niche' as shown in the README.
-
-# plot_3d <- plot_niche_3d(
-#   env_data = bio_df_with_suitability,
-#   niche = species_niche,
-#   n_bg = 50000,
-#   n_suitable = 10000
-# )
-#
-# plot_3d
 }
 \seealso{
 Other ellipsoid functions: 

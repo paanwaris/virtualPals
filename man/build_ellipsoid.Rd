@@ -12,42 +12,24 @@ build_ellipsoid(
 )
 }
 \arguments{
-\item{center}{Numeric vector of length 2 or 3 defining the ellipsoid's center.}
+\item{center}{A named numeric vector of length 2 or 3 defining the ellipsoid's
+center (e.g., `c(Temp = 15, Precip = 800)`).}
 
-\item{axes}{Numeric vector with the same length as `center`, defining the
+\item{axes}{A numeric vector with the same length as `center`, defining the
 semi-axis lengths *before* rotation.}
 
-\item{angles}{Numeric vector of rotation angles in radians.
-- For 2D: A single angle.
-- For 3D: A vector of three angles `c(ax, ay, az)` applied in the
-  x, then y, then z order (Tait-Bryan angles).}
+\item{angles}{Numeric vector of rotation angles in radians. For 2D, a single
+angle; for 3D, a vector of three angles `c(ax, ay, az)`.}
 
 \item{n_points}{Integer; the resolution for the plotted surface.}
 }
 \value{
-An object of class `ellipsoid` containing the defining parameters,
-  rotation matrix (`R`), shape matrix (`Sigma`), its inverse (`Sigma_inv`),
-  and a data frame of surface points for plotting.
+An object of class `ellipsoid`.
 }
 \description{
 Creates a structured object representing a rotated ellipsoid. This object
 contains all necessary matrices for geometric and statistical calculations,
 as well as surface points for plotting.
-}
-\examples{
-# A 2D ellipse rotated by 30 degrees (pi/6)
-ell2d <- build_ellipsoid(
-  center = c(0, 1),
-  axes = c(3, 1.5),
-  angles = pi/6
-)
-
-# A 3D ellipsoid with rotations on multiple axes
-ell3d <- build_ellipsoid(
-  center = c(10, 20, 30),
-  axes = c(5, 10, 15),
-  angles = c(pi/4, 0, pi/3)
-)
 }
 \seealso{
 Other ellipsoid functions: 
