@@ -2,19 +2,8 @@ Package: virtualPals
 Type: Package
 Title: Create Virtual Species and Simulate Ecological Niches
 Version: 0.1.0
-Authors@R: c(
-    person(
-      "YourFirstName", "YourLastName",
-      email = "your.email@example.com",
-      role = c("aut", "cre")
-    )
-  )
-Description: Provides a suite of tools to create virtual species by defining
-    their ecological niches as N-dimensional ellipsoids. Users can project
-    these niches onto geographic space using environmental raster data to
-    generate potential species distributions. Key features include functions
-    for generating binary and probabilistic suitability maps and interactive
-    3D visualizations of niche space.
+Authors@R:
+Description:
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
