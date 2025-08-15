@@ -23,6 +23,8 @@ of a given ellipsoid, based on the squared Mahalanobis distance.
 Other ellipsoid functions: 
 \code{\link{build_ellipsoid}()},
 \code{\link{generate_suitability}()},
-\code{\link{plot_niche_3d}()}
+\code{\link{plot_niche_3d}()},
+\code{\link{plot_occurrences_3d}()},
+\code{\link{sample_points_niche}()}
 }
 \concept{ellipsoid functions}

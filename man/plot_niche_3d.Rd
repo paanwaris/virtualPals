@@ -5,24 +5,27 @@
 \title{Plot a 3D Niche in Environmental Space}
 \usage{
 plot_niche_3d(
-  env_data,
+  env_rasters,
   niche,
   n_bg = 50000,
   n_suitable = 10000,
-  title = "Ellipsoid Niche in 3D Environmental Space"
+  colors = c("grey", "darkgreen", "blue"),
+  title = "Species Niche in 3D Environmental Space"
 )
 }
 \arguments{
-\item{env_data}{A data frame containing columns for the environmental
-variables and a `suitability` column (1 for suitable, 0 for unsuitable).}
+\item{env_rasters}{A `SpatRaster` object from `terra` with 3 layers
+representing the environmental variables.}
 
-\item{niche}{An `ellipsoid` object created by `build_ellipsoid()`. It must
-be a 3D niche.}
+\item{niche}{An `ellipsoid` object created by `build_ellipsoid()`.}
 
 \item{n_bg}{An integer specifying the number of background (unsuitable) points
 to sample for the plot.}
 
 \item{n_suitable}{An integer specifying the number of suitable points to sample.}
+
+\item{colors}{A character vector of three colors for the background points,
+suitable points, and niche boundary, respectively.}
 
 \item{title}{A character string for the plot's main title.}
 }
@@ -31,12 +34,15 @@ An interactive `plotly` object.
 }
 \description{
 Creates an interactive 3D plot showing a species' ellipsoidal niche
-relative to the available background environments.
+relative to the available background environments. This version samples a
+specific number of points from the suitable and background groups separately.
 }
 \seealso{
 Other ellipsoid functions: 
 \code{\link{build_ellipsoid}()},
 \code{\link{generate_suitability}()},
-\code{\link{points_in_ellipsoid}()}
+\code{\link{plot_occurrences_3d}()},
+\code{\link{points_in_ellipsoid}()},
+\code{\link{sample_points_niche}()}
 }
 \concept{ellipsoid functions}

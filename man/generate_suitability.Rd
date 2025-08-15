@@ -45,6 +45,8 @@ plot(suit_map_prob, main = "Probabilistic Suitability")
 Other ellipsoid functions: 
 \code{\link{build_ellipsoid}()},
 \code{\link{plot_niche_3d}()},
-\code{\link{points_in_ellipsoid}()}
+\code{\link{plot_occurrences_3d}()},
+\code{\link{points_in_ellipsoid}()},
+\code{\link{sample_points_niche}()}
 }
 \concept{ellipsoid functions}

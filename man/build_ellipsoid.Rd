@@ -35,6 +35,8 @@ as well as surface points for plotting.
 Other ellipsoid functions: 
 \code{\link{generate_suitability}()},
 \code{\link{plot_niche_3d}()},
-\code{\link{points_in_ellipsoid}()}
+\code{\link{plot_occurrences_3d}()},
+\code{\link{points_in_ellipsoid}()},
+\code{\link{sample_points_niche}()}
 }
 \concept{ellipsoid functions}
